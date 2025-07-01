@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "inventree.fullname" . }}-server
+  labels:
+    {{- include "inventree.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.server.service.type }}
+  ports:
+    - port: {{ .Values.server.service.port }}
+      targetPort: 8000
+      protocol: TCP
+      name: http
+  selector:
+    app: inventree-server
+    {{- include "inventree.selectorLabels" . | nindent 4 }}

@@ -1,0 +1,131 @@
+nameOverride: ""
+
+fullnameOverride: ""
+
+replicaCount: 1
+
+server:
+  image:
+    repository: inventree/inventree
+    tag: 0.17.14
+    pullPolicy: IfNotPresent
+  service:
+    type: ClusterIP
+    port: 80
+
+worker:
+  affinity:
+    podAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+      - labelSelector:
+          matchExpressions:
+          - key: app
+            operator: In
+            values:
+            - inventree-server
+        topologyKey: kubernetes.io/hostname
+
+siteURL: http://inventree.local
+
+extraEnv:
+  INVENTREE_PLUGINS_ENABLED: "True"
+  INVENTREE_AUTO_UPDATE: "True"
+  INVENTREE_TAG: "stable"
+  INVENTREE_EXT_VOLUME: "/home/inventree/data"
+  INVENTREE_CUSTOMIZE: '{"hide_pui_banner":"true"}'
+
+  INVENTREE_CACHE_ENABLED: "True"
+  INVENTREE_CACHE_HOST: "inventree-redis-master"
+  INVENTREE_CACHE_PORT: "6379"
+
+
+  INVENTREE_DEBUG: "True"
+  INVENTREE_LOG_LEVEL: "INFO"
+  INVENTREE_DB_LOGGING: "True" 
+  INVENTREE_LOGIN_DEFAULT_HTTP_PROTOCOL: "https"
+
+redis:
+  install: true
+  architecture: standalone
+  cluster:
+    enabled: false
+  metrics:
+    enabled: false
+  # Inventree doesn't authenticate with cache, hence disabled here.
+  auth:
+    enabled: false
+
+persistence:
+  enabled: true
+  accessModes:
+    - ReadWriteOnce
+  size: 10Gi
+  storageClass: ""
+  existingClaim: ""
+
+externalDatabase:
+  enabled: true
+  engine: postgresql
+  auth:
+    host: postgresql
+    port: "5432"
+    database: "inventree"
+    user: "inventree"
+
+ingress:
+  enabled: true
+  className: "nginx"
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    kubernetes.io/tls-acme: "true"
+    kubernetes.io/ingress.provider: nginx
+  hosts:
+    - host: inventree.local
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+  tls:
+   - secretName: inventree-cert-tls
+     hosts:
+       - inventree.local
+
+auth:
+  enabled: true
+  adminURL: admin
+  adminUser: admin
+  adminEmail: admin@local
+
+
+sso:
+  enabled: true
+  social_backend: "allauth.socialaccount.providers.openid_connect"
+
+smtp:
+  enabled: false
+  backend: "django.core.mail.backends.smtp.EmailBackend"
+  host: ""
+  port: "587"
+  user: ""
+  useTLS: "True"
+  emailSender: "inventree@local"
+
+resources: {}
+
+livenessProbe:
+  httpGet:
+    path: /
+    port: http
+
+readinessProbe:
+  httpGet:
+    path: /
+    port: http
+
+volumes: []
+
+volumeMounts: []
+
+nodeSelector: {}
+
+tolerations: []
+

@@ -1,0 +1,50 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "inventree.fullname" . }}-server
+  labels:
+    {{- include "inventree.labels" . | nindent 4 }}
+data:
+  # Extra Env
+  {{- range $key, $value := .Values.extraEnv }}
+  {{ $key }}: {{ $value | quote }}
+  {{- end }}
+  {{- if .Values.auth.enabled }}
+
+  # Admin Conf
+  INVENTREE_ADMIN_ENABLED: "True"
+  INVENTREE_ADMIN_URL: {{ .Values.auth.adminURL | quote }}
+
+  INVENTREE_ADMIN_USER: {{ .Values.auth.adminUser | quote }}
+  INVENTREE_ADMIN_PASSWORD: {{ .Values.auth.adminPassword | quote }}
+  INVENTREE_ADMIN_EMAIL: {{ .Values.auth.adminEmail | quote }}
+  INVENTREE_SECRET_KEY: {{ .Values.auth.secretKey | quote }}
+  {{- end }}
+  
+  INVENTREE_SITE_URL: {{ .Values.siteURL | quote }}
+
+  ## External DB
+  {{- if .Values.externalDatabase.enabled }}
+  INVENTREE_DB_ENGINE: {{ .Values.externalDatabase.engine | quote }}
+  INVENTREE_DB_NAME: {{ .Values.externalDatabase.auth.database | quote  }}
+  INVENTREE_DB_USER: {{ .Values.externalDatabase.auth.user | quote  }}
+  INVENTREE_DB_PASSWORD: {{ .Values.externalDatabase.auth.password | quote }}
+  INVENTREE_DB_HOST: {{ .Values.externalDatabase.auth.host | quote  }}
+  INVENTREE_DB_PORT: {{ .Values.externalDatabase.auth.port | quote  }}
+  {{- end }}
+
+  ## SSO
+  {{- if .Values.sso.enabled }}
+  INVENTREE_SOCIAL_BACKENDS: {{ .Values.sso.social_backend | quote }}
+  {{- end }}
+
+  ## SMTP
+  {{- if .Values.smtp.enabled }}
+  INVENTREE_EMAIL_BACKEND: {{ .Values.smtp.backend | quote }}
+  INVENTREE_EMAIL_HOST: {{ .Values.smtp.host | quote }}
+  INVENTREE_EMAIL_PORT: {{ .Values.smtp.port | quote }}
+  INVENTREE_EMAIL_USERNAME: {{ .Values.smtp.user | quote }}
+  INVENTREE_EMAIL_PASSWORD: {{ .Values.smtp.password | quote }}
+  INVENTREE_EMAIL_TLS: {{ .Values.smtp.useTLS | quote }}
+  INVENTREE_EMAIL_SENDER: {{ .Values.smtp.emailSender | quote }}
+  {{- end }}
