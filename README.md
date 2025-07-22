@@ -26,15 +26,7 @@ A `justfile` is provided in the repo to manage this project.
 just cluster-up
 ```
 
--  **Verify cluster is up**
+- **Install PG**
 ```bash
-$ kind get clusters
-gitter
-
-$ kubectl get nodes
-NAME                   STATUS   ROLES    AGE     VERSION
-gitter-control-plane   Ready    master   2m41s   v1.19.1
-gitter-worker          Ready    <none>   2m9s    v1.19.1
-gitter-worker2         Ready    <none>   2m9s    v1.19.1
-gitter-worker3         Ready    <none>   2m15s   v1.19.1
+just install-pg
 ```
