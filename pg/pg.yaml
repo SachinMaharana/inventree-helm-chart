@@ -1,0 +1,17 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: inventree-pg-cluster
+  namespace: inventree
+spec:
+  description: "postgresql cluster for inventree"
+  imageName: ghcr.io/cloudnative-pg/postgresql:15.13 
+  instances: 2
+  startDelay: 300
+  primaryUpdateStrategy: unsupervised
+  bootstrap:
+    initdb:
+      database: inventree
+      owner: inventree
+  storage:
+    size: 1Gi

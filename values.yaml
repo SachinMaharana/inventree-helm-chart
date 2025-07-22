@@ -4,6 +4,9 @@ fullnameOverride: ""
 
 replicaCount: 1
 
+# imagePullSecrets: 
+#   - name: harbor-registry
+
 server:
   image:
     repository: inventree/inventree
@@ -11,7 +14,25 @@ server:
     pullPolicy: IfNotPresent
   service:
     type: ClusterIP
-    port: 80
+    ports:
+      app:
+        port: 8000
+        targetPort: 80
+        name: http
+      proxy:
+        port: 80
+        targetPort: 80
+        name: proxy
+  # extraVolumes:
+  #   - name: gcs-sa
+  #     secret:
+  #       secretName: inventree-secret
+  # extraVolumeMounts:
+  #   - name: gcs-sa
+  #     mountPath: /run/secrets/sa.json
+  #     subPath: gcs_credentials
+  #     readOnly: true
+
 
 worker:
   affinity:
@@ -25,7 +46,7 @@ worker:
             - inventree-server
         topologyKey: kubernetes.io/hostname
 
-siteURL: http://inventree.local
+siteURL: https://inventree.local
 
 extraEnv:
   INVENTREE_PLUGINS_ENABLED: "True"
@@ -37,12 +58,14 @@ extraEnv:
   INVENTREE_CACHE_ENABLED: "True"
   INVENTREE_CACHE_HOST: "inventree-redis-master"
   INVENTREE_CACHE_PORT: "6379"
+  INVENTREE_TIMEZONE: "Europe/Amsterdam"
 
-
-  INVENTREE_DEBUG: "True"
-  INVENTREE_LOG_LEVEL: "INFO"
+  INVENTREE_DEBUG: "False"
+  INVENTREE_LOG_LEVEL: "WARNING"
   INVENTREE_DB_LOGGING: "True" 
   INVENTREE_LOGIN_DEFAULT_HTTP_PROTOCOL: "https"
+
+
 
 redis:
   install: true
@@ -67,7 +90,7 @@ externalDatabase:
   enabled: true
   engine: postgresql
   auth:
-    host: postgresql
+    host: inventree-pg-cluster-rw
     port: "5432"
     database: "inventree"
     user: "inventree"
@@ -79,11 +102,17 @@ ingress:
     kubernetes.io/ingress.class: nginx
     kubernetes.io/tls-acme: "true"
     kubernetes.io/ingress.provider: nginx
+    nginx.ingress.kubernetes.io/from-to-www-redirect: "true"
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    nginx.ingress.kubernetes.io/proxy-body-size: "30m"    
+    nginx.ingress.kubernetes.io/client-body-buffer-size: "30m"
+    nginx.ingress.kubernetes.io/proxy-buffering: "on"
+    nginx.ingress.kubernetes.io/proxy-request-buffering: "on"
   hosts:
     - host: inventree.local
       paths:
         - path: /
-          pathType: ImplementationSpecific
+          pathType: Prefix
   tls:
    - secretName: inventree-cert-tls
      hosts:
@@ -93,7 +122,7 @@ auth:
   enabled: true
   adminURL: admin
   adminUser: admin
-  adminEmail: admin@local
+  adminEmail: 
 
 
 sso:
@@ -101,13 +130,13 @@ sso:
   social_backend: "allauth.socialaccount.providers.openid_connect"
 
 smtp:
-  enabled: false
+  enabled: true
   backend: "django.core.mail.backends.smtp.EmailBackend"
-  host: ""
+  host: "smtp.mailgun.org"
   port: "587"
   user: ""
   useTLS: "True"
-  emailSender: "inventree@local"
+  emailSender: ""
 
 resources: {}
 
@@ -128,4 +157,3 @@ volumeMounts: []
 nodeSelector: {}
 
 tolerations: []
-

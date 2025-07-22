@@ -1,0 +1,7 @@
+config:
+  create: true
+  name: cnpg-controller-manager-config
+  clusterWide: true
+
+service:
+  name: cnpg-webhook-service
