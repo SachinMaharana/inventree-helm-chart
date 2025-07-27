@@ -24,9 +24,15 @@ A `justfile` is provided in the repo to manage this project.
 - **Create a local dev kubernetes cluster**
 ```bash
 just cluster-up
+just prep
 ```
 
-- **Install PG**
+- **Install Postgres**
 ```bash
 just install-pg
+```
+
+- **Bring Down the setup**
+```bash
+just down
 ```
